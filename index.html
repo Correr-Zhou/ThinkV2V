@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ThinkV2V | Instruction-Guided Video Editing</title>
+    <meta
+      name="description"
+      content="ThinkV2V: Unleashing the Reasoning Capability of MLLMs for Instruction-Guided Video Editing."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav">
+        <a class="brand" href="#top">ThinkV2V</a>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#method">Method</a>
+          <a href="#data">Data</a>
+          <a href="#results">Results</a>
+          <a href="#gallery">Gallery</a>
+          <a href="#citation">Citation</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-inner">
+          <h1>
+            ThinkV2V: Unleashing the Reasoning Capability of MLLMs for
+            Instruction-Guided Video Editing
+          </h1>
+          <div class="authors">
+            Donghao Zhou<sup>*</sup>, Haoyang He<sup>*</sup>, Fan Zhang, Hao Yang, Guisheng Liu,
+            Xin Gao, Zhongwei Wan, Xingyuan Bu, Jie Wang, Qiangpeng Yang,
+            Shilei Wen<sup>†</sup>, Chi-Wing Fu, Pheng-Ann Heng<sup>†</sup>
+          </div>
+          <div class="affiliations">
+            The Chinese University of Hong Kong · Zhejiang University ·
+            ByteDance · The Ohio State University
+          </div>
+          <div class="author-notes">
+            <sup>*</sup> Equal contribution · <sup>†</sup> Corresponding authors
+          </div>
+          <div class="hero-actions">
+            <a class="button primary" href="https://arxiv.org/search/?query=ThinkV2V&searchtype=all" target="_blank" rel="noreferrer">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M7 3h7l5 5v13H7z" />
+                  <path d="M14 3v5h5" />
+                  <path d="M10 13h6" />
+                  <path d="M10 17h4" />
+                </svg>
+              </span>
+              Paper
+            </a>
+            <a class="button" href="https://github.com/Correr-Zhou/ThinkV2V" target="_blank" rel="noreferrer">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.2-1.5 6.2-6.7a5.2 5.2 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.6s-1.1-.3-3.8 1.4a13.2 13.2 0 0 0-6.9 0C6.4.3 5.3.6 5.3.6a4.8 4.8 0 0 0-.1 3.6 5.2 5.2 0 0 0-1.4 3.6c0 5.2 3.2 6.4 6.2 6.7a3.4 3.4 0 0 0-1 2.6V22" />
+                </svg>
+              </span>
+              Code
+            </a>
+            <a class="button" href="https://huggingface.co/donghao-zhou/ThinkV2V-5B" target="_blank" rel="noreferrer">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 3 4 7.5v9L12 21l8-4.5v-9z" />
+                  <path d="M12 12 4 7.5" />
+                  <path d="m12 12 8-4.5" />
+                  <path d="M12 12v9" />
+                </svg>
+              </span>
+              Model
+            </a>
+            <a class="button" href="https://huggingface.co/datasets/donghao-zhou/ThinkV2V-150K" target="_blank" rel="noreferrer">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <ellipse cx="12" cy="5" rx="7" ry="3" />
+                  <path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5" />
+                  <path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
+                </svg>
+              </span>
+              Dataset
+            </a>
+            <a class="button" href="https://huggingface.co/datasets/donghao-zhou/ThinkV2V-Bench" target="_blank" rel="noreferrer">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 19V5" />
+                  <path d="M4 19h16" />
+                  <path d="M8 16v-5" />
+                  <path d="M12 16V8" />
+                  <path d="M16 16v-3" />
+                </svg>
+              </span>
+              Benchmark
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="overview" class="section overview-section">
+        <div class="section-heading">
+          <span class="section-index">Overview</span>
+          <h2>Think before you edit</h2>
+          <p>
+            Real-world video editing instructions can be implicit, indirect, and
+            causality-heavy. ThinkV2V empowers an MLLM to first reason over
+            the source video and instruction, then turns the refined intent into
+            robust DiT conditions for generating the edited video.
+          </p>
+        </div>
+        <figure class="paper-figure">
+          <img src="assets/teaser.png" alt="Overview of ThinkV2V" />
+        </figure>
+        <div class="overview-cards numbered-grid">
+          <article class="story-card">
+            <span class="section-index">Motivation</span>
+            <h3>Implicit instructions need reasoning</h3>
+            <p>
+              Existing video editors often work well for direct prompts, but
+              struggle when the true editing goal must be derived from temporal
+              dynamics, object relations, or causal context.
+            </p>
+          </article>
+          <article class="story-card">
+            <span class="section-index">Core Idea</span>
+            <h3>MLLM as an explicit thinker</h3>
+            <p>
+              Instead of using the MLLM as a static semantic encoder, ThinkV2V
+              activates Chain-of-Thought reasoning and produces a refined prompt
+              before generation.
+            </p>
+          </article>
+          <article class="story-card">
+            <span class="section-index">Outcome</span>
+            <h3>Reasoning becomes executable</h3>
+            <p>
+              MLLM hidden states, original text embeddings, and source-video VAE
+              features jointly condition a DiT generator for faithful editing
+              execution.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="method" class="section">
+        <div class="section-heading">
+          <span class="section-index">01 / Method</span>
+          <h2>From MLLM thinking to DiT editing</h2>
+          <p>
+            ThinkV2V builds on a practical MLLM-to-DiT architecture and
+            incorporates dedicated training and inference strategies that elicit
+            reasoning under complex editing instructions.
+          </p>
+        </div>
+        <figure class="paper-figure">
+          <img src="assets/pipeline.png" alt="Pipeline of ThinkV2V" />
+        </figure>
+        <div class="method-grid">
+          <article>
+            <span>Explicit thinking</span>
+            <h3>MLLM for intent-reasoning</h3>
+            <p>
+              The MLLM reads the source video and instruction, reasons about
+              the hidden intent, and passes features through the connector to
+              align them with the DiT conditioning space.
+            </p>
+          </article>
+          <article>
+            <span>Editing execution</span>
+            <h3>Multi-condition DiT</h3>
+            <p>
+              Reasoning features, original prompt embeddings, and source-video
+              VAE features jointly condition the DiT generator for faithful
+              editing execution.
+            </p>
+          </article>
+          <article>
+            <span>Training</span>
+            <h3>Progressive curriculum training</h3>
+            <p>
+              Training progresses from stable basic editing to high-resolution
+              adaptation and reasoning-intensive cases, gradually strengthening
+              reliable execution.
+            </p>
+          </article>
+          <article>
+            <span>Inference</span>
+            <h3>Inference-time thinking scaling</h3>
+            <p>
+              Serial refinement plus best-of-N selection lets the MLLM revisit
+              candidate prompts and select the one best aligned with the
+              original request.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="data" class="section">
+        <div class="section-heading">
+          <span class="section-index">02 / Dataset & Benchmark</span>
+          <h2>Reasoning-oriented training and evaluation</h2>
+          <p>
+            We also introduce ThinkV2V-150K and ThinkV2V-Bench for the
+            community, serving as a reasoning-oriented training set and
+            benchmark, respectively.
+          </p>
+        </div>
+        <div class="stat-strip">
+          <div>
+            <strong>150K</strong>
+            <span>ThinkV2V-150K pairs</span>
+          </div>
+          <div>
+            <strong>308</strong>
+            <span>ThinkV2V-Bench samples</span>
+          </div>
+          <div>
+            <strong>5</strong>
+            <span>reasoning-intensive edit categories</span>
+          </div>
+          <div>
+            <strong>720p</strong>
+            <span>default editing resolution</span>
+          </div>
+        </div>
+        <figure class="paper-figure slim">
+          <img src="assets/date_bench.png" alt="Dataset and benchmark statistics" />
+        </figure>
+      </section>
+
+      <section id="results" class="section results-section">
+        <div class="section-heading">
+          <span class="section-index">03 / Quantitative Comparison</span>
+          <h2>Competitive performance across complex and standard editing</h2>
+          <p>
+            Results are reported on ThinkV2V-Bench and OpenVE-Bench using
+            Seed-1.6-VL and Gemini-2.5-Pro judges, covering diverse editing
+            categories and instruction complexities.
+          </p>
+        </div>
+        <div class="table-tabs" role="tablist" aria-label="Quantitative tables">
+          <button class="tab-button active" data-table="think-seed" type="button">
+            ThinkV2V-Bench · Seed
+          </button>
+          <button class="tab-button" data-table="think-gemini" type="button">
+            ThinkV2V-Bench · Gemini
+          </button>
+          <button class="tab-button" data-table="openve-seed" type="button">
+            OpenVE-Bench · Seed
+          </button>
+          <button class="tab-button" data-table="openve-gemini" type="button">
+            OpenVE-Bench · Gemini
+          </button>
+        </div>
+
+        <div class="table-panel active" id="think-seed">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>#Param.</th>
+                  <th>Global Style</th>
+                  <th>Bg. Change</th>
+                  <th>Local Change</th>
+                  <th>Local Remove</th>
+                  <th>Local Add</th>
+                  <th>Overall</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>VACE</td><td>14B</td><td>1.33</td><td>1.17</td><td>1.41</td><td>1.00</td><td>1.05</td><td>1.19</td></tr>
+                <tr><td>OmniVideo</td><td>1.3B</td><td>1.92</td><td>1.40</td><td>1.91</td><td>1.96</td><td>1.87</td><td>1.82</td></tr>
+                <tr><td>ReCo</td><td>1.3B</td><td>2.25</td><td>1.62</td><td>2.50</td><td>3.13</td><td>2.39</td><td>2.26</td></tr>
+                <tr><td>Lucy-Edit</td><td>5B</td><td>1.69</td><td>2.08</td><td>2.84</td><td>1.09</td><td>2.21</td><td>2.01</td></tr>
+                <tr><td>ICVE</td><td>13B</td><td>1.95</td><td>2.04</td><td>2.91</td><td>2.05</td><td>2.12</td><td>2.23</td></tr>
+                <tr><td>DITTO</td><td>14B</td><td>3.28</td><td>1.93</td><td>2.12</td><td>1.00</td><td>1.82</td><td>2.02</td></tr>
+                <tr><td>OpenVE-Edit</td><td>5B</td><td>2.24</td><td>2.49</td><td>2.55</td><td>1.14</td><td>2.05</td><td>2.09</td></tr>
+                <tr class="ours"><td><strong>ThinkV2V</strong></td><td>5B</td><td>3.13</td><td>2.67</td><td>3.07</td><td>2.30</td><td>2.42</td><td><strong>2.72</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-panel" id="think-gemini">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Method</th><th>#Param.</th><th>Global Style</th><th>Bg. Change</th><th>Local Change</th><th>Local Remove</th><th>Local Add</th><th>Overall</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>VACE</td><td>14B</td><td>1.77</td><td>1.91</td><td>1.95</td><td>2.07</td><td>1.48</td><td>1.83</td></tr>
+                <tr><td>OmniVideo</td><td>1.3B</td><td>2.48</td><td>1.18</td><td>1.25</td><td>1.56</td><td>1.23</td><td>1.52</td></tr>
+                <tr><td>ReCo</td><td>1.3B</td><td>2.58</td><td>1.60</td><td>2.03</td><td>2.71</td><td>2.42</td><td>2.27</td></tr>
+                <tr><td>Lucy-Edit</td><td>5B</td><td>2.84</td><td>2.01</td><td>3.12</td><td>1.87</td><td>2.39</td><td>2.46</td></tr>
+                <tr><td>ICVE</td><td>13B</td><td>2.90</td><td>1.99</td><td>2.98</td><td>2.23</td><td>2.36</td><td>2.52</td></tr>
+                <tr><td>DITTO</td><td>14B</td><td>3.83</td><td>1.36</td><td>1.97</td><td>1.39</td><td>1.57</td><td>2.01</td></tr>
+                <tr><td>OpenVE-Edit</td><td>5B</td><td>3.06</td><td>2.05</td><td>2.06</td><td>1.32</td><td>1.90</td><td>2.08</td></tr>
+                <tr class="ours"><td><strong>ThinkV2V</strong></td><td>5B</td><td>3.74</td><td>2.39</td><td>2.89</td><td>2.03</td><td>2.02</td><td><strong>2.61</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-panel" id="openve-seed">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Method</th><th>#Param.</th><th>Global Style</th><th>Bg. Change</th><th>Local Change</th><th>Local Remove</th><th>Local Add</th><th>Overall</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>VACE</td><td>14B</td><td>1.41</td><td>1.16</td><td>1.43</td><td>1.00</td><td>1.05</td><td>1.21</td></tr>
+                <tr><td>OmniVideo</td><td>1.3B</td><td>1.02</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td></tr>
+                <tr><td>ReCo</td><td>1.3B</td><td>2.68</td><td>1.69</td><td>2.67</td><td>2.46</td><td>2.42</td><td>2.38</td></tr>
+                <tr><td>Lucy-Edit</td><td>5B</td><td>2.17</td><td>2.20</td><td>3.30</td><td>1.03</td><td>2.37</td><td>2.21</td></tr>
+                <tr><td>ICVE</td><td>13B</td><td>2.35</td><td>1.86</td><td>2.91</td><td>2.68</td><td>2.27</td><td>2.41</td></tr>
+                <tr><td>DITTO</td><td>14B</td><td>3.70</td><td>2.23</td><td>2.28</td><td>1.00</td><td>2.08</td><td>2.26</td></tr>
+                <tr><td>OpenVE-Edit</td><td>5B</td><td>3.11</td><td>2.72</td><td>3.19</td><td>1.42</td><td>2.41</td><td>2.57</td></tr>
+                <tr class="ours"><td><strong>ThinkV2V</strong></td><td>5B</td><td>3.41</td><td>2.49</td><td>3.49</td><td>2.83</td><td>2.43</td><td><strong>2.93</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-panel" id="openve-gemini">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Method</th><th>#Param.</th><th>Global Style</th><th>Bg. Change</th><th>Local Change</th><th>Local Remove</th><th>Local Add</th><th>Overall</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>VACE</td><td>14B</td><td>1.49</td><td>1.55</td><td>2.07</td><td>1.46</td><td>1.26</td><td>1.57</td></tr>
+                <tr><td>OmniVideo</td><td>1.3B</td><td>1.11</td><td>1.18</td><td>1.14</td><td>1.14</td><td>1.36</td><td>1.19</td></tr>
+                <tr><td>ReCo</td><td>1.3B</td><td>2.69</td><td>1.64</td><td>2.09</td><td>2.71</td><td>1.95</td><td>2.20</td></tr>
+                <tr><td>Lucy-Edit</td><td>5B</td><td>2.27</td><td>1.57</td><td>3.20</td><td>1.75</td><td>2.30</td><td>2.22</td></tr>
+                <tr><td>ICVE</td><td>13B</td><td>2.22</td><td>1.62</td><td>2.57</td><td>2.51</td><td>1.97</td><td>2.18</td></tr>
+                <tr><td>DITTO</td><td>14B</td><td>4.01</td><td>1.68</td><td>2.03</td><td>1.53</td><td>1.41</td><td>2.13</td></tr>
+                <tr><td>OpenVE-Edit</td><td>5B</td><td>3.16</td><td>2.36</td><td>2.98</td><td>1.85</td><td>2.15</td><td>2.50</td></tr>
+                <tr class="ours"><td><strong>ThinkV2V</strong></td><td>5B</td><td>3.81</td><td>2.12</td><td>3.48</td><td>2.39</td><td>1.85</td><td><strong>2.72</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="gallery" class="section">
+        <div class="section-heading">
+          <span class="section-index">04 / Qualitative Video Comparison</span>
+          <h2>Reasoning-intensive editing examples</h2>
+          <p>
+            ThinkV2V reasons over complex editing intent and produces
+            instruction-aligned videos.
+          </p>
+        </div>
+        <div class="video-grid">
+          <article class="video-card">
+            <div class="video-card-head">
+              <div>
+                <span>Pair 01</span>
+              </div>
+              <button class="play-pair-button" type="button">Play Both</button>
+            </div>
+            <p class="prompt-text">Change the <span class="prompt-emphasis">hands typing on the laptop into mechanical prosthetics</span> with a metallic sheen, visible articulated segments, and an <span class="prompt-emphasis">internal blue luminescence</span>.</p>
+            <div class="video-pair">
+              <figure>
+                <video src="assets/videos/pair_1/s.mp4" controls muted loop playsinline></video>
+                <figcaption>Source video</figcaption>
+              </figure>
+              <figure>
+                <video src="assets/videos/pair_1/t.mp4" controls muted loop playsinline></video>
+                <figcaption>Target video</figcaption>
+              </figure>
+            </div>
+          </article>
+          <article class="video-card">
+            <div class="video-card-head">
+              <div>
+                <span>Pair 02</span>
+              </div>
+              <button class="play-pair-button" type="button">Play Both</button>
+            </div>
+            <p class="prompt-text">Give the video a <span class="prompt-emphasis">visual style reminiscent of historical artwork</span>, characterized by a gentle color palette and a texture that suggests it was drawn by hand.</p>
+            <div class="video-pair">
+              <figure>
+                <video src="assets/videos/pair_2/s.mp4" controls muted loop playsinline></video>
+                <figcaption>Source video</figcaption>
+              </figure>
+              <figure>
+                <video src="assets/videos/pair_2/t.mp4" controls muted loop playsinline></video>
+                <figcaption>Target video</figcaption>
+              </figure>
+            </div>
+          </article>
+          <article class="video-card">
+            <div class="video-card-head">
+              <div>
+                <span>Pair 03</span>
+              </div>
+              <button class="play-pair-button" type="button">Play Both</button>
+            </div>
+            <p class="prompt-text">Change the <span class="prompt-emphasis">lighting to reflect the time of day just before sunrise</span>, creating a soft, warm ambiance and filling the sky with pastel tones.</p>
+            <div class="video-pair">
+              <figure>
+                <video src="assets/videos/pair_3/s.mp4" controls muted loop playsinline></video>
+                <figcaption>Source video</figcaption>
+              </figure>
+              <figure>
+                <video src="assets/videos/pair_3/t.mp4" controls muted loop playsinline></video>
+                <figcaption>Target video</figcaption>
+              </figure>
+            </div>
+          </article>
+          <article class="video-card">
+            <div class="video-card-head">
+              <div>
+                <span>Pair 04</span>
+              </div>
+              <button class="play-pair-button" type="button">Play Both</button>
+            </div>
+            <p class="prompt-text">Replace the <span class="prompt-emphasis">tall, woody plant on the left</span> with one that has <span class="prompt-emphasis">foliage the color of a precious yellow metal</span> and a <span class="prompt-emphasis">soft, glimmering effect</span>.</p>
+            <div class="video-pair">
+              <figure>
+                <video src="assets/videos/pair_4/s.mp4" controls muted loop playsinline></video>
+                <figcaption>Source video</figcaption>
+              </figure>
+              <figure>
+                <video src="assets/videos/pair_4/t.mp4" controls muted loop playsinline></video>
+                <figcaption>Target video</figcaption>
+              </figure>
+            </div>
+          </article>
+          <article class="video-card">
+            <div class="video-card-head">
+              <div>
+                <span>Pair 05</span>
+              </div>
+              <button class="play-pair-button" type="button">Play Both</button>
+            </div>
+            <p class="prompt-text">Remove the <span class="prompt-emphasis">individual whose back is to us, gazing out at the urban sprawl</span>.</p>
+            <div class="video-pair">
+              <figure>
+                <video src="assets/videos/pair_5/s.mp4" controls muted loop playsinline></video>
+                <figcaption>Source video</figcaption>
+              </figure>
+              <figure>
+                <video src="assets/videos/pair_5/t.mp4" controls muted loop playsinline></video>
+                <figcaption>Target video</figcaption>
+              </figure>
+            </div>
+          </article>
+          <article class="video-card">
+            <div class="video-card-head">
+              <div>
+                <span>Pair 06</span>
+              </div>
+              <button class="play-pair-button" type="button">Play Both</button>
+            </div>
+            <p class="prompt-text">Transform the visual into an <span class="prompt-emphasis">art style that uses water-soluble pigments</span>, characterized by <span class="prompt-emphasis">soft edges and transparent color washes</span>.</p>
+            <div class="video-pair">
+              <figure>
+                <video src="assets/videos/pair_6/s.mp4" controls muted loop playsinline></video>
+                <figcaption>Source video</figcaption>
+              </figure>
+              <figure>
+                <video src="assets/videos/pair_6/t.mp4" controls muted loop playsinline></video>
+                <figcaption>Target video</figcaption>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="citation" class="section citation-section">
+        <div class="citation-layout">
+          <div class="citation-info">
+            <span>Citation</span>
+            <h2>ThinkV2V</h2>
+            <p>
+              ThinkV2V: Unleashing the Reasoning Capability of MLLMs for
+              Instruction-Guided Video Editing
+            </p>
+            <a href="https://arxiv.org/search/?query=ThinkV2V&searchtype=all" target="_blank" rel="noreferrer">Paper ↗</a>
+          </div>
+          <div class="bibtex-card">
+            <div class="bibtex-header">
+              <span>BibTeX</span>
+              <button class="copy-button" type="button" aria-label="Copy BibTeX" data-copy-target="thinkv2v-bibtex">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 8V5.5A1.5 1.5 0 0 1 9.5 4h9A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H16" />
+                  <path d="M5.5 8h9A1.5 1.5 0 0 1 16 9.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 18.5v-9A1.5 1.5 0 0 1 5.5 8Z" />
+                </svg>
+              </button>
+            </div>
+            <pre><code id="thinkv2v-bibtex">@article{zhou2026thinkv2v,
+  title = {ThinkV2V: Unleashing the Reasoning Capability of MLLMs for Instruction-Guided Video Editing},
+  author = {Zhou, Donghao and He, Haoyang and Zhang, Fan and Yang, Hao and Liu, Guisheng and Gao, Xin and Wan, Zhongwei and Bu, Xingyuan and Wang, Jie and Yang, Qiangpeng and Wen, Shilei and Fu, Chi-Wing and Heng, Pheng-Ann},
+  year = {2026}
+}</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>ThinkV2V · Reasoning-driven instruction-guided video editing</p>
+      <p class="template-credit">
+        Website template inspired by
+        <a href="https://zju-omniai.github.io/Spatial-Interactor/" target="_blank" rel="noreferrer">
+          Spatial-Interactor
+        </a>.
+      </p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
